@@ -36,10 +36,10 @@ spec:
         - name: {{ .Values.containerName }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}@{{ .Values.image.sha256 }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- with .Values.envFrom }}
           envFrom:
             - configMapRef:
-              name: {{ .Release.Name }}-{{ .Chart.Name }}
+                name: {{ .Release.Name }}-{{ .Chart.Name }}
+          {{- with .Values.env }}
           env:
           {{- toYaml . | nindent 12 }}
           {{- end }}
