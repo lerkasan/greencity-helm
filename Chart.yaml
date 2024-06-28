@@ -1,6 +1,0 @@
-apiVersion: v2
-name: greencity-backcore
-description: GreenCity BackCore chart
-type: application
-version: 0.1.2 # chart version
-appVersion: "0.0.1-snapshot" # application version
