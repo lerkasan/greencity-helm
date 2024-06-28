@@ -1,41 +1,31 @@
 namespace: greencity
-
 replicaCount: 2
-
 labels:
   app: greencity
   tier: backcore
   tags.datadoghq.com/env: "prod"
   tags.datadoghq.com/service: "greencity-backcore"
   tags.datadoghq.com/version: "0.0.1"
-
 selectorLabels:
   app: greencity
   tier: backcore
-
 podLabels:
   app: greencity
   tier: backcore
-
 strategy:
   type: RollingUpdate
   rollingUpdate:
     maxSurge: 50%
     maxUnavailable: 50%
-
 restartPolicy: Always
-
 # 084912621610.dkr.ecr.us-east-1.amazonaws.com/greencity/backcore:5@sha256:97b247a9370b3b80a2fa2de3348787fd99c8ae919c805ab349c55d19f2326054
 image:
   repository: 084912621610.dkr.ecr.us-east-1.amazonaws.com/greencity/backcore
   tag: 5
   sha256: sha256:97b247a9370b3b80a2fa2de3348787fd99c8ae919c805ab349c55d19f2326054
   pullPolicy: IfNotPresent
-
 imagePullSecrets: []
-
 containerName: backcore
-
 resources:
   limits:
     cpu: 2000m
@@ -43,14 +33,12 @@ resources:
   requests:
     cpu: 500m
     memory: 512Mi
-
 securityContext:
   runAsNonRoot: true
   runAsUser: 1000
   runAsGroup: 1000
   seccompProfile:
     type: RuntimeDefault
-
 podSecurityContext:
   readOnlyRootFilesystem: true
   runAsNonRoot: true
@@ -64,18 +52,16 @@ podSecurityContext:
   capabilities:
     drop:
       - ALL
-
 volumes:
   - name: backcore-log
-    emptyDir: 
+    emptyDir:
       sizeLimit: 300Mi
   - name: tmpfs
-    emptyDir: 
+    emptyDir:
       sizeLimit: 300Mi
   - name: backcore-secret-volume
     secret:
       secretName: greencity-backcore-secret
-
 volumeMounts:
   - name: backcore-log
     mountPath: /app/logs
@@ -84,11 +70,9 @@ volumeMounts:
   - name: backcore-secret-volume
     mountPath: /run/secrets/app
     readOnly: true
-
 # envFrom:
 #   - configMapRef:
 #       name: greencity-backcore-env
-
 env:
   - name: BACKCORE_URL
     value: http://$(BACKCORE_HOST):$(BACKCORE_PORT)
@@ -100,11 +84,9 @@ env:
     value: $(FRONTEND_URL)/welcome
   - name: CHAT_URL
     value: http://$(CHAT_HOST):$(CHAT_PORT)
-
 service:
   type: ClusterIP
   port: 8080
-
 livenessProbe:
   httpGet:
     port: 8080
@@ -114,7 +96,6 @@ livenessProbe:
   periodSeconds: 60
   timeoutSeconds: 15
   failureThreshold: 5
-
 readinessProbe:
   httpGet:
     port: 8080
@@ -124,7 +105,6 @@ readinessProbe:
   periodSeconds: 60
   timeoutSeconds: 15
   failureThreshold: 5
-
 configMapData:
   PROFILE: docker
   SPRING_CONFIG_IMPORT_SECRETS: optional:configtree:/run/secrets/app/
@@ -173,65 +153,50 @@ configMapData:
   DD_ENV: prod
   DD_VERSION: 0.0.1
   DD_AGENT_HOST: datadog-agent
-
 externalSecret:
   region: us-east-1
   refreshInterval: 1h
   serviceAccount: external-secrets-account
-
 externalSecretData:
-- secretKey: DATASOURCE_HOST
-  remoteRef:
-    key: greencity_database_host
-
-- secretKey: DATASOURCE_NAME
-  remoteRef:
-    key: greencity_database_name
-
-- secretKey: DATASOURCE_USER
-  remoteRef:
-    key: greencity_database_username
-
-- secretKey: DATASOURCE_PASSWORD
-  remoteRef:
-    key: greencity_database_password
-
-- secretKey: API_KEY
-  remoteRef:
-    key: greencity_api_key
-
-- secretKey: API_SECRET
-  remoteRef:
-    key: greencity_api_secret
-
-- secretKey: AZURE_CONNECTION_STRING
-  remoteRef:
-    key: greencity_azure_connection_string
-
-- secretKey: EMAIL_ADDRESS
-  remoteRef:
-    key: greencity_email_address
-
-- secretKey: EMAIL_PASSWORD
-  remoteRef:
-    key: greencity_email_password
-
-- secretKey: GOOGLE_API_KEY
-  remoteRef:
-    key: greencity_google_api_key
-
-- secretKey: GOOGLE_CLIENT_ID
-  remoteRef:
-    key: greencity_google_client_id
-
-- secretKey: GOOGLE_CLIENT_ID_MANAGER
-  remoteRef:
-    key: greencity_google_client_id_manager
-
-- secretKey: TOKEN_KEY
-  remoteRef:
-    key: greencity_token_key
-
-- secretKey: google-creds.json
-  remoteRef:
-    key: greencity_google_creds_json
+  - secretKey: DATASOURCE_HOST
+    remoteRef:
+      key: greencity_database_host
+  - secretKey: DATASOURCE_NAME
+    remoteRef:
+      key: greencity_database_name
+  - secretKey: DATASOURCE_USER
+    remoteRef:
+      key: greencity_database_username
+  - secretKey: DATASOURCE_PASSWORD
+    remoteRef:
+      key: greencity_database_password
+  - secretKey: API_KEY
+    remoteRef:
+      key: greencity_api_key
+  - secretKey: API_SECRET
+    remoteRef:
+      key: greencity_api_secret
+  - secretKey: AZURE_CONNECTION_STRING
+    remoteRef:
+      key: greencity_azure_connection_string
+  - secretKey: EMAIL_ADDRESS
+    remoteRef:
+      key: greencity_email_address
+  - secretKey: EMAIL_PASSWORD
+    remoteRef:
+      key: greencity_email_password
+  - secretKey: GOOGLE_API_KEY
+    remoteRef:
+      key: greencity_google_api_key
+  - secretKey: GOOGLE_CLIENT_ID
+    remoteRef:
+      key: greencity_google_client_id
+  - secretKey: GOOGLE_CLIENT_ID_MANAGER
+    remoteRef:
+      key: greencity_google_client_id_manager
+  - secretKey: TOKEN_KEY
+    remoteRef:
+      key: greencity_token_key
+  - secretKey: google-creds.json
+    remoteRef:
+      key: greencity_google_creds_json
