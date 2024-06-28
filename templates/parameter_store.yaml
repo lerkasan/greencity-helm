@@ -1,0 +1,14 @@
+apiVersion: external-secrets.io/v1beta1
+kind: SecretStore
+metadata:
+  namespace: {{ .Values.namespace }}
+  name: {{ .Release.Name }}-{{ .Chart.Name }}
+spec:
+  provider:
+    aws:
+      service: ParameterStore
+      region: {{ .Values.externalSecret.region}}
+      auth:
+        jwt:
+          serviceAccountRef:
+            name: {{ .Values.externalSecret.serviceAccount}}
