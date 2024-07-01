@@ -1,6 +1,6 @@
 apiVersion: v2
-name: greencity-backuser
+name: backuser
 description: GreenCity BackUser chart
 type: application
-version: 0.1.0 # chart version
+version: 0.1.1 # chart version
 appVersion: "0.0.1-snapshot" # application version

@@ -1,0 +1,50 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: {{ .Values.namespace }}
+  name: {{ .Release.Name }}-{{ .Chart.Name }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.ingressClassName }}
+  {{- with .Values.ingress.tls }}
+  tls:
+    {{- toYaml . | nindent 2 }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.service.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-{{ .Chart.Name }}  # {{ .Values.fullnameOverride }}
+                port:
+                  number: {{ .Values.service.port }}
+          {{- toYaml .Values.backend_services | nindent 10 }}
+
+
+        #   - path: /backcore/
+        #     pathType: Prefix
+        #     backend:
+        #       service:
+        #         name: greencity-backcore-backcore
+        #         port:
+        #           number: 8080
+        #   - path: /backuser/
+        #     pathType: Prefix
+        #     backend:
+        #       service:
+        #         name: greencity-backuser-backuser
+        #         port:
+        #           number: 8060
+        #   - path: /socket/
+        #     pathType: Prefix
+        #     backend:
+        #       service:
+        #         name: backcore
+        #         port:
+        #           number: 8080

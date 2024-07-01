@@ -1,5 +1,7 @@
 namespace: greencity
 replicaCount: 2
+annotations:
+  argocd.argoproj.io/sync-wave: "2"
 labels:
   app: greencity
   tier: backuser
@@ -124,9 +126,11 @@ configMapData:
   MAIL_PORT: '587'
   SMTP_AUTH: 'true'
   SMTP_TLS_ENABLED: 'true'
-  BACKCORE_HOST: backcore
+  BACKCORE_HOST: greencity-backcore-backcore
+  # BACKCORE_HOST: backcore
   BACKCORE_PORT: '8080'
-  BACKUSER_HOST: backuser
+  BACKUSER_HOST: greencity-backuser-backuser
+  # BACKUSER_HOST: backuser
   BACKUSER_PORT: '8060'
   CHAT_HOST: chat
   CHAT_PORT: '8030'

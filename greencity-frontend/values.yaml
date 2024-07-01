@@ -1,0 +1,300 @@
+# fullnameOverride: frontend
+backend_services:
+  - path: /backcore/
+    pathType: Prefix
+    backend:
+      service:
+        name: greencity-backcore-backcore
+        port:
+          number: 8080
+  - path: /backuser/
+    pathType: Prefix
+    backend:
+      service:
+        name: greencity-backuser-backuser
+        port:
+          number: 8060
+
+namespace: greencity
+replicaCount: 2
+annotations:
+  argocd.argoproj.io/sync-wave: "3"
+labels:
+  app: greencity
+  tier: frontend
+  name: nginx
+selectorLabels:
+  app: greencity
+  tier: frontend
+podLabels:
+  app: greencity
+  tier: frontend
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 50%
+    maxUnavailable: 50%
+restartPolicy: Always
+image:
+  repository: 084912621610.dkr.ecr.us-east-1.amazonaws.com/greencity/frontend
+  tag: 1
+  sha256: sha256:c354e0bdb028db0f99d60418451ca624eee826d3b0263ac97eca6fffa48c6ce5
+  pullPolicy: IfNotPresent
+imagePullSecrets: []
+containerName: frontend
+resources:
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+  # sysctls:
+  #   - name: net.ipv4.ip_unprivileged_port_start
+  #     value: "1"
+podSecurityContext:
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  allowPrivilegeEscalation: false
+  # appArmorProfile:
+  #   type: RuntimeDefault
+  seccompProfile:
+    type: RuntimeDefault
+  capabilities:
+    drop:
+      - ALL
+  sysctls:
+    - name: net.ipv4.ip_unprivileged_port_start
+      value: "1"
+volumes:
+  - name: nginx-conf
+    configMap:
+      name: greencity-nginx-conf
+      items:
+        - key: nginx.conf
+          path: nginx.conf
+  # - name: nginx-log
+  #   emptyDir: 
+  #     sizeLimit: 300Mi
+  - name: nginx-cache
+    emptyDir: 
+      sizeLimit: 500Mi
+  - name: tmpfs
+    emptyDir: 
+      sizeLimit: 300Mi
+volumeMounts:
+  - name: nginx-conf
+    mountPath: /etc/nginx/nginx.conf
+    subPath: nginx.conf
+    readOnly: true
+  # - name: nginx-log
+  #   mountPath: /var/log/nginx
+  - name: nginx-cache
+    mountPath: /var/cache/nginx
+  - name: tmpfs
+    mountPath: /tmp
+service:
+  host: lerkasan.net
+  type: ClusterIP
+  port: 80
+ingress:
+  ingressClassName: alb
+  annotations:
+    alb.ingress.kubernetes.io/load-balancer-name: greencity-ingress-alb
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/group.name: greencity-ingress-group
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:9876543210:certificate/5f7452ec-e5e4-41f4-8233-be06cdff0d7c
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+    alb.ingress.kubernetes.io/target-group-attributes: stickiness.enabled=true,stickiness.lb_cookie.duration_seconds=60
+    external-dns.alpha.kubernetes.io/hostname: lerkasan.net
+  tls:
+  - hosts:
+    - lerkasan.net
+livenessProbe:
+  httpGet:
+    port: 80
+    path: /health
+    scheme: HTTP
+  initialDelaySeconds: 30
+  periodSeconds: 60
+  timeoutSeconds: 15
+  failureThreshold: 5
+readinessProbe:
+  httpGet:
+    port: 80
+    path: /health
+    scheme: HTTP
+  initialDelaySeconds: 30
+  periodSeconds: 60
+  timeoutSeconds: 15
+  failureThreshold: 5
+configMapData:
+  nginx.conf: |
+    user  nginx;
+    worker_processes  auto;
+
+    error_log  /var/log/nginx/error.log notice;
+    pid        /tmp/nginx.pid;
+
+
+    events {
+        worker_connections  1024;
+    }
+
+    http {
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+
+        log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                          '$status $body_bytes_sent "$http_referer" '
+                          '"$http_user_agent" "$http_x_forwarded_for"';
+
+        access_log  /var/log/nginx/access.log  main;
+
+        sendfile        on;
+        #tcp_nopush     on;
+
+        keepalive_timeout  65;
+
+        #gzip  on;
+
+        # include /etc/nginx/conf.d/*.conf;
+
+      # server {
+      #   listen 80 default_server;
+      #   listen [::]:80 ipv6only=on default_server;
+      #   server_name _;
+
+      #   location /health {
+      #     allow all;
+      #     return 200;
+      #   }
+
+      #   deny all;
+      # }
+
+      server {
+        listen 81;
+
+        location /nginx_status {
+          stub_status on;
+        }
+
+        location / {
+          return 404;
+        }
+      }
+
+      server {
+        listen 80;
+
+        server_name lerkasan.net greencity.local;
+
+        ssi off;
+        server_tokens off; # hides version on 404 or 500 pages
+
+        # Proxy headers
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_hide_header X-Powered-By;  # Hide upstream proxy headers
+        # End Proxy headers
+
+        # Security headers
+        add_header X-Frame-Options "SAMEORIGIN";  # avoid clickjacking
+        # add_header X-Frame-Options "DENY";
+        add_header X-XSS-Protection "1; mode=block";
+        add_header Content-Security-Policy "default-src 'self'; script-src 'self'; img-src 'self' data:; media-src 'self' blob: data: https://lerkasan.net; http://lerkasan.net; http://greencity.local style-src 'self' data: https://fonts.googleapis.com fonts.googleapis.com https://use.fontawesome.com use.fontawesome.com 'unsafe-inline'; font-src 'self' data: https://fonts.googleapis.com fonts.googleapis.com https://use.fontawesome.com use.fontawesome.com; frame-src 'self'; connect-src 'self' https://lerkasan.net http://lerkasan.net http://greencity.local https://apis.google.com; object-src 'none' ";
+        add_header X-Content-Type-Options nosniff;
+        # End Security headers
+
+        # Buffer policy
+        client_body_buffer_size 1K;
+        client_header_buffer_size 1k;
+        client_max_body_size 20M;              # 1k, increase it if receiving file uploads via the POST method
+        large_client_header_buffers 2 1k;
+        # End Buffer policy
+
+        # Timeouts
+        client_body_timeout   10;
+        client_header_timeout 10;
+        keepalive_timeout     5 5;
+        send_timeout          10;
+        # End Timeouts
+
+        # Block bots, scanners, etc.
+        if ($http_user_agent ~* LWP::Simple|BBBike|msnbot|scrapbot) {
+          return 403;
+        }
+        # End block bots
+
+        # Only GET, POST, PUT, DELETE, HEAD requests are allowed
+        if ( $request_method !~ ^(GET|POST|PUT|DELETE|HEAD)$ ) {
+          return 405;
+        }
+        # End HTTP Methods
+
+        # Only requests to lerkasan.net domain are allowed
+        # if ($host !~ ^(${NGINX_HOST}|${PRIVATE_IP}|localhost|greencity.local|lerkasan.net)$ ) {
+        #   return 444;
+        # }
+
+        # if ($http_host !~ ^(${NGINX_HOST}|${PRIVATE_IP}|localhost|greencity.local|lerkasan.net)$ ) {
+        #   return 444;
+        # }
+        #
+
+        error_page 404 /error.html;
+
+        location /health {
+          allow all;
+          return 200;
+        }
+
+        # Frontend
+        location / {
+          add_header 'Access-Control-Allow-Origin' '*';
+          root /var/www/app;
+          index index.html index.htm;
+          set $fallback_file /index.js.html;
+          try_files $uri $uri/ /index.html;
+          autoindex off;
+
+          limit_except GET HEAD POST { deny all; }
+        }
+
+
+
+        #   # BackCore
+        # location /socket/ {
+        #   proxy_pass http://backcore:8080/socket;
+        #   proxy_redirect off;
+        #   autoindex off;
+
+        #   limit_except GET HEAD POST PUT DELETE { deny all; }
+        # }
+        
+        location ~ /\.git.* {
+          deny all;
+        }
+
+        location ~ /\.(?!well-known).* {
+            deny all;
+        }
+        location ~ /\.(.*)/?(.*)? {
+            deny all;
+        }
+      }
+    }
