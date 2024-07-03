@@ -24,7 +24,7 @@ spec:
                 name: {{ .Release.Name }}-{{ .Chart.Name }}  # {{ .Values.fullnameOverride }}
                 port:
                   number: {{ .Values.service.port }}
-          {{- toYaml .Values.backend_services | nindent 10 }}
+        #   {{- toYaml .Values.backend_services | nindent 10 }}
 
 
         #   - path: /backcore/

@@ -272,9 +272,26 @@ configMapData:
           limit_except GET HEAD POST { deny all; }
         }
 
+        # BackCore
+        location /backcore/ {
+          proxy_pass http://greencity-backcore-backcore:8080/;
+          proxy_redirect off;
+          autoindex off;
+
+          limit_except GET HEAD POST PUT DELETE { deny all; }
+        }
+
+          # BackCore
+        location /backuser/ {
+          proxy_pass http://greencity-backuser-backuser:8060/;
+          proxy_redirect off;
+          autoindex off;
+
+          limit_except GET HEAD POST PUT DELETE { deny all; }
+        }
 
 
-        #   # BackCore
+        #   # Socket
         # location /socket/ {
         #   proxy_pass http://backcore:8080/socket;
         #   proxy_redirect off;
