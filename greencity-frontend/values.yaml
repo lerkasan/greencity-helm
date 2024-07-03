@@ -55,9 +55,9 @@ securityContext:
   runAsGroup: 1000
   seccompProfile:
     type: RuntimeDefault
-  # sysctls:
-  #   - name: net.ipv4.ip_unprivileged_port_start
-  #     value: "1"
+  sysctls:
+    - name: net.ipv4.ip_unprivileged_port_start
+      value: "1"
 podSecurityContext:
   readOnlyRootFilesystem: true
   runAsNonRoot: true
@@ -71,9 +71,6 @@ podSecurityContext:
   capabilities:
     drop:
       - ALL
-  sysctls:
-    - name: net.ipv4.ip_unprivileged_port_start
-      value: "1"
 volumes:
   - name: nginx-conf
     configMap:
