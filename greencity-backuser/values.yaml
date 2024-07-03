@@ -156,6 +156,7 @@ configMapData:
   DD_ENV: prod
   DD_VERSION: 0.0.1
   DD_AGENT_HOST: datadog-agent
+ClusterSecretStoreName: cluster-secretstore
 externalSecret:
   region: us-east-1
   refreshInterval: 1h
