@@ -1,19 +1,19 @@
 # fullnameOverride: frontend
-backend_services:
-  - path: /backcore/
-    pathType: Prefix
-    backend:
-      service:
-        name: greencity-backcore-backcore
-        port:
-          number: 8080
-  - path: /backuser/
-    pathType: Prefix
-    backend:
-      service:
-        name: greencity-backuser-backuser
-        port:
-          number: 8060
+# backend_services:
+#   - path: /backcore/
+#     pathType: Prefix
+#     backend:
+#       service:
+#         name: greencity-backcore-backcore
+#         port:
+#           number: 8080
+#   - path: /backuser/
+#     pathType: Prefix
+#     backend:
+#       service:
+#         name: greencity-backuser-backuser
+#         port:
+#           number: 8060
 
 namespace: greencity
 replicaCount: 2
