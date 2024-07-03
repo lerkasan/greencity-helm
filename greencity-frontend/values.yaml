@@ -77,7 +77,7 @@ podSecurityContext:
 volumes:
   - name: nginx-conf
     configMap:
-      name: greencity-nginx-conf
+      name: greencity-frontend-frontend
       items:
         - key: nginx.conf
           path: nginx.conf
