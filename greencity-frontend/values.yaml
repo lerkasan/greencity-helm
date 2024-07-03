@@ -112,7 +112,7 @@ ingress:
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/group.name: greencity-ingress-group
-    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:9876543210:certificate/5f7452ec-e5e4-41f4-8233-be06cdff0d7c
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:084912621610:certificate/5f7452ec-e5e4-41f4-8233-be06cdff0d7c
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
     alb.ingress.kubernetes.io/ssl-redirect: '443'
     alb.ingress.kubernetes.io/healthcheck-path: /health
