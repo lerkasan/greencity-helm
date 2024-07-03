@@ -75,6 +75,9 @@ volumeMounts:
 # envFrom:
 #   - configMapRef:
 #       name: greencity-backcore-env
+externalSecretsIRSA: arn:aws:iam::084912621610:role/external-secrets
+serviceAccountName: external-secrets-account
+clusterSecretStoreName: cluster-secretstore
 env:
   - name: BACKCORE_URL
     value: http://$(BACKCORE_HOST):$(BACKCORE_PORT)
@@ -157,7 +160,6 @@ configMapData:
   DD_ENV: prod
   DD_VERSION: 0.0.1
   DD_AGENT_HOST: datadog-agent
-ClusterSecretStoreName: cluster-secretstore
 externalSecret:
   region: us-east-1
   refreshInterval: 1h
