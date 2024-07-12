@@ -74,7 +74,7 @@ podSecurityContext:
 volumes:
   - name: nginx-conf
     configMap:
-      name: greencity-frontend-frontend
+      name: greencity-frontend-greencity-frontend
       items:
         - key: nginx.conf
           path: nginx.conf
@@ -274,7 +274,7 @@ configMapData:
 
         # BackCore
         location /backcore/ {
-          proxy_pass http://greencity-backcore-backcore:8080/;
+          proxy_pass http://greencity-backcore-greencity-backcore:8080/;
           proxy_redirect off;
           autoindex off;
 
@@ -283,7 +283,7 @@ configMapData:
 
           # BackCore
         location /backuser/ {
-          proxy_pass http://greencity-backuser-backuser:8060/;
+          proxy_pass http://greencity-backuser-greencity-backuser:8060/;
           proxy_redirect off;
           autoindex off;
 
