@@ -37,8 +37,8 @@ strategy:
 restartPolicy: Always
 image:
   repository: 084912621610.dkr.ecr.us-east-1.amazonaws.com/greencity/frontend
-  tag: 1
-  sha256: sha256:c354e0bdb028db0f99d60418451ca624eee826d3b0263ac97eca6fffa48c6ce5
+  tag: 0.0.0-04819258476449923463d849ef83b22dbbb01673
+  sha256: sha256:9191e5b4a21250ac570c001ee07cf97c953b64bb229e46ebe1143896dca8b7cd
   pullPolicy: IfNotPresent
 imagePullSecrets: []
 containerName: frontend
@@ -82,10 +82,10 @@ volumes:
   #   emptyDir: 
   #     sizeLimit: 300Mi
   - name: nginx-cache
-    emptyDir: 
+    emptyDir:
       sizeLimit: 500Mi
   - name: tmpfs
-    emptyDir: 
+    emptyDir:
       sizeLimit: 300Mi
 volumeMounts:
   - name: nginx-conf
@@ -116,8 +116,8 @@ ingress:
     alb.ingress.kubernetes.io/target-group-attributes: stickiness.enabled=true,stickiness.lb_cookie.duration_seconds=60
     external-dns.alpha.kubernetes.io/hostname: lerkasan.net
   tls:
-  - hosts:
-    - lerkasan.net
+    - hosts:
+        - lerkasan.net
 livenessProbe:
   httpGet:
     port: 80
@@ -137,178 +137,4 @@ readinessProbe:
   timeoutSeconds: 15
   failureThreshold: 5
 configMapData:
-  nginx.conf: |
-    user  nginx;
-    worker_processes  auto;
-
-    error_log  /var/log/nginx/error.log notice;
-    pid        /tmp/nginx.pid;
-
-
-    events {
-        worker_connections  1024;
-    }
-
-    http {
-        include       /etc/nginx/mime.types;
-        default_type  application/octet-stream;
-
-        log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-                          '$status $body_bytes_sent "$http_referer" '
-                          '"$http_user_agent" "$http_x_forwarded_for"';
-
-        access_log  /var/log/nginx/access.log  main;
-
-        sendfile        on;
-        #tcp_nopush     on;
-
-        keepalive_timeout  65;
-
-        #gzip  on;
-
-        # include /etc/nginx/conf.d/*.conf;
-
-      # server {
-      #   listen 80 default_server;
-      #   listen [::]:80 ipv6only=on default_server;
-      #   server_name _;
-
-      #   location /health {
-      #     allow all;
-      #     return 200;
-      #   }
-
-      #   deny all;
-      # }
-
-      server {
-        listen 81;
-
-        location /nginx_status {
-          stub_status on;
-        }
-
-        location / {
-          return 404;
-        }
-      }
-
-      server {
-        listen 80;
-
-        server_name lerkasan.net greencity.local;
-
-        ssi off;
-        server_tokens off; # hides version on 404 or 500 pages
-
-        # Proxy headers
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_hide_header X-Powered-By;  # Hide upstream proxy headers
-        # End Proxy headers
-
-        # Security headers
-        add_header X-Frame-Options "SAMEORIGIN";  # avoid clickjacking
-        # add_header X-Frame-Options "DENY";
-        add_header X-XSS-Protection "1; mode=block";
-        add_header Content-Security-Policy "default-src 'self'; script-src 'self'; img-src 'self' data:; media-src 'self' blob: data: https://lerkasan.net; http://lerkasan.net; http://greencity.local style-src 'self' data: https://fonts.googleapis.com fonts.googleapis.com https://use.fontawesome.com use.fontawesome.com 'unsafe-inline'; font-src 'self' data: https://fonts.googleapis.com fonts.googleapis.com https://use.fontawesome.com use.fontawesome.com; frame-src 'self'; connect-src 'self' https://lerkasan.net http://lerkasan.net http://greencity.local https://apis.google.com; object-src 'none' ";
-        add_header X-Content-Type-Options nosniff;
-        # End Security headers
-
-        # Buffer policy
-        client_body_buffer_size 1K;
-        client_header_buffer_size 1k;
-        client_max_body_size 20M;              # 1k, increase it if receiving file uploads via the POST method
-        large_client_header_buffers 2 1k;
-        # End Buffer policy
-
-        # Timeouts
-        client_body_timeout   10;
-        client_header_timeout 10;
-        keepalive_timeout     5 5;
-        send_timeout          10;
-        # End Timeouts
-
-        # Block bots, scanners, etc.
-        if ($http_user_agent ~* LWP::Simple|BBBike|msnbot|scrapbot) {
-          return 403;
-        }
-        # End block bots
-
-        # Only GET, POST, PUT, DELETE, HEAD requests are allowed
-        if ( $request_method !~ ^(GET|POST|PUT|DELETE|HEAD)$ ) {
-          return 405;
-        }
-        # End HTTP Methods
-
-        # Only requests to lerkasan.net domain are allowed
-        # if ($host !~ ^(${NGINX_HOST}|${PRIVATE_IP}|localhost|greencity.local|lerkasan.net)$ ) {
-        #   return 444;
-        # }
-
-        # if ($http_host !~ ^(${NGINX_HOST}|${PRIVATE_IP}|localhost|greencity.local|lerkasan.net)$ ) {
-        #   return 444;
-        # }
-        #
-
-        error_page 404 /error.html;
-
-        location /health {
-          allow all;
-          return 200;
-        }
-
-        # Frontend
-        location / {
-          add_header 'Access-Control-Allow-Origin' '*';
-          root /var/www/app;
-          index index.html index.htm;
-          set $fallback_file /index.js.html;
-          try_files $uri $uri/ /index.html;
-          autoindex off;
-
-          limit_except GET HEAD POST { deny all; }
-        }
-
-        # BackCore
-        location /backcore/ {
-          proxy_pass http://greencity-backcore-greencity-backcore:8080/;
-          proxy_redirect off;
-          autoindex off;
-
-          limit_except GET HEAD POST PUT DELETE { deny all; }
-        }
-
-          # BackCore
-        location /backuser/ {
-          proxy_pass http://greencity-backuser-greencity-backuser:8060/;
-          proxy_redirect off;
-          autoindex off;
-
-          limit_except GET HEAD POST PUT DELETE { deny all; }
-        }
-
-
-        #   # Socket
-        # location /socket/ {
-        #   proxy_pass http://backcore:8080/socket;
-        #   proxy_redirect off;
-        #   autoindex off;
-
-        #   limit_except GET HEAD POST PUT DELETE { deny all; }
-        # }
-        
-        location ~ /\.git.* {
-          deny all;
-        }
-
-        location ~ /\.(?!well-known).* {
-            deny all;
-        }
-        location ~ /\.(.*)/?(.*)? {
-            deny all;
-        }
-      }
-    }
+  nginx.conf: "user  nginx;\nworker_processes  auto;\n\nerror_log  /var/log/nginx/error.log notice;\npid        /tmp/nginx.pid;\n\n\nevents {\n    worker_connections  1024;\n}\n\nhttp {\n    include       /etc/nginx/mime.types;\n    default_type  application/octet-stream;\n\n    log_format  main  '$remote_addr - $remote_user [$time_local] \"$request\" '\n                      '$status $body_bytes_sent \"$http_referer\" '\n                      '\"$http_user_agent\" \"$http_x_forwarded_for\"';\n\n    access_log  /var/log/nginx/access.log  main;\n\n    sendfile        on;\n    #tcp_nopush     on;\n\n    keepalive_timeout  65;\n\n    #gzip  on;\n\n    # include /etc/nginx/conf.d/*.conf;\n\n  # server {\n  #   listen 80 default_server;\n  #   listen [::]:80 ipv6only=on default_server;\n  #   server_name _;\n\n  #   location /health {\n  #     allow all;\n  #     return 200;\n  #   }\n\n  #   deny all;\n  # }\n\n  server {\n    listen 81;\n\n    location /nginx_status {\n      stub_status on;\n    }\n\n    location / {\n      return 404;\n    }\n  }\n\n  server {\n    listen 80;\n\n    server_name lerkasan.net greencity.local;\n\n    ssi off;\n    server_tokens off; # hides version on 404 or 500 pages\n\n    # Proxy headers\n    proxy_set_header Host $host;\n    proxy_set_header X-Real-IP $remote_addr;\n    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n    proxy_set_header X-Forwarded-Proto $scheme;\n    proxy_hide_header X-Powered-By;  # Hide upstream proxy headers\n    # End Proxy headers\n\n    # Security headers\n    add_header X-Frame-Options \"SAMEORIGIN\";  # avoid clickjacking\n    # add_header X-Frame-Options \"DENY\";\n    add_header X-XSS-Protection \"1; mode=block\";\n    add_header Content-Security-Policy \"default-src 'self'; script-src 'self'; img-src 'self' data:; media-src 'self' blob: data: https://lerkasan.net; http://lerkasan.net; http://greencity.local style-src 'self' data: https://fonts.googleapis.com fonts.googleapis.com https://use.fontawesome.com use.fontawesome.com 'unsafe-inline'; font-src 'self' data: https://fonts.googleapis.com fonts.googleapis.com https://use.fontawesome.com use.fontawesome.com; frame-src 'self'; connect-src 'self' https://lerkasan.net http://lerkasan.net http://greencity.local https://apis.google.com; object-src 'none' \";\n    add_header X-Content-Type-Options nosniff;\n    # End Security headers\n\n    # Buffer policy\n    client_body_buffer_size 1K;\n    client_header_buffer_size 1k;\n    client_max_body_size 20M;              # 1k, increase it if receiving file uploads via the POST method\n    large_client_header_buffers 2 1k;\n    # End Buffer policy\n\n    # Timeouts\n    client_body_timeout   10;\n    client_header_timeout 10;\n    keepalive_timeout     5 5;\n    send_timeout          10;\n    # End Timeouts\n\n    # Block bots, scanners, etc.\n    if ($http_user_agent ~* LWP::Simple|BBBike|msnbot|scrapbot) {\n      return 403;\n    }\n    # End block bots\n\n    # Only GET, POST, PUT, DELETE, HEAD requests are allowed\n    if ( $request_method !~ ^(GET|POST|PUT|DELETE|HEAD)$ ) {\n      return 405;\n    }\n    # End HTTP Methods\n\n    # Only requests to lerkasan.net domain are allowed\n    # if ($host !~ ^(${NGINX_HOST}|${PRIVATE_IP}|localhost|greencity.local|lerkasan.net)$ ) {\n    #   return 444;\n    # }\n\n    # if ($http_host !~ ^(${NGINX_HOST}|${PRIVATE_IP}|localhost|greencity.local|lerkasan.net)$ ) {\n    #   return 444;\n    # }\n    #\n\n    error_page 404 /error.html;\n\n    location /health {\n      allow all;\n      return 200;\n    }\n\n    # Frontend\n    location / {\n      add_header 'Access-Control-Allow-Origin' '*';\n      root /var/www/app;\n      index index.html index.htm;\n      set $fallback_file /index.js.html;\n      try_files $uri $uri/ /index.html;\n      autoindex off;\n\n      limit_except GET HEAD POST { deny all; }\n    }\n\n    # BackCore\n    location /backcore/ {\n      proxy_pass http://greencity-backcore-greencity-backcore:8080/;\n      proxy_redirect off;\n      autoindex off;\n\n      limit_except GET HEAD POST PUT DELETE { deny all; }\n    }\n\n      # BackCore\n    location /backuser/ {\n      proxy_pass http://greencity-backuser-greencity-backuser:8060/;\n      proxy_redirect off;\n      autoindex off;\n\n      limit_except GET HEAD POST PUT DELETE { deny all; }\n    }\n\n\n    #   # Socket\n    # location /socket/ {\n    #   proxy_pass http://backcore:8080/socket;\n    #   proxy_redirect off;\n    #   autoindex off;\n\n    #   limit_except GET HEAD POST PUT DELETE { deny all; }\n    # }\n    \n    location ~ /\\.git.* {\n      deny all;\n    }\n\n    location ~ /\\.(?!well-known).* {\n        deny all;\n    }\n    location ~ /\\.(.*)/?(.*)? {\n        deny all;\n    }\n  }\n}"
