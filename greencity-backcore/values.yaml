@@ -23,8 +23,8 @@ restartPolicy: Always
 # 084912621610.dkr.ecr.us-east-1.amazonaws.com/greencity/backcore:5@sha256:97b247a9370b3b80a2fa2de3348787fd99c8ae919c805ab349c55d19f2326054
 image:
   repository: 084912621610.dkr.ecr.us-east-1.amazonaws.com/greencity/backcore
-  tag: 0.0.1-snapshot-0286551f6270a4516a3554600e26a9cdb005fb53
-  sha256: sha256:669ab00f1c48a83081a46d83b2be8bf1328433dc8af2f55f0fec95f916ecd172
+  tag: 0.0.1-snapshot-b3debf19b4444226033326834fc4c9e63ad9c854
+  sha256: sha256:6d4cf5def1e4adaf690aed3ba87e99fb7f9ece12d27695503ce100298b3778a0
   pullPolicy: IfNotPresent
 imagePullSecrets: []
 containerName: backcore
