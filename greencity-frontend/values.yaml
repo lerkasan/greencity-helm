@@ -37,8 +37,8 @@ strategy:
 restartPolicy: Always
 image:
   repository: 084912621610.dkr.ecr.us-east-1.amazonaws.com/greencity/frontend
-  tag: 0.0.0-cecfc0005a477be2c616550eff6fa414bac8fc93
-  sha256: sha256:e9d829cfbe5bea47ccea0f1082c6744f695e53b1e641019fb92311b0368f7060
+  tag: 0.0.0-a80b4fc0e6bf74be6c8df37d056ac9cbea9e7fa5
+  sha256: sha256:3b12725653e3270261f4609721f2c37bdbf58367b43b09427721bc6d3af1d358
   pullPolicy: IfNotPresent
 imagePullSecrets: []
 containerName: frontend
