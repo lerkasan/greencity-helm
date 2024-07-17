@@ -22,8 +22,8 @@ strategy:
 restartPolicy: Always
 image:
   repository: 084912621610.dkr.ecr.us-east-1.amazonaws.com/greencity/backuser
-  tag: 1.0-snapshot-de32bca1527065688fdf358aa585d16916b41266
-  sha256: sha256:553a63ffc2bade0b06b73f6ef86c57bc6c86bf83c54fe8920267979096ce5bd7
+  tag: 1.0-snapshot-b420633760bb57cd0675b53d98768fa0fefafd5d
+  sha256: sha256:6776328e349db0d6da8fc73aafb77adb2de819d4be22155909f66c54900ef592
   pullPolicy: IfNotPresent
 imagePullSecrets: []
 containerName: backuser
