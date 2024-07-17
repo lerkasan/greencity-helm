@@ -78,9 +78,6 @@ volumes:
       items:
         - key: nginx.conf
           path: nginx.conf
-  # - name: nginx-log
-  #   emptyDir: 
-  #     sizeLimit: 300Mi
   - name: nginx-cache
     emptyDir:
       sizeLimit: 500Mi
@@ -92,8 +89,6 @@ volumeMounts:
     mountPath: /etc/nginx/nginx.conf
     subPath: nginx.conf
     readOnly: true
-  # - name: nginx-log
-  #   mountPath: /var/log/nginx
   - name: nginx-cache
     mountPath: /var/cache/nginx
   - name: tmpfs

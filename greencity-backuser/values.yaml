@@ -71,9 +71,6 @@ volumeMounts:
   - name: backuser-secret-volume
     mountPath: /run/secrets/app
     readOnly: true
-# envFrom:
-#   - configMapRef:
-#       name: greencity-backuser-env
 serviceAccountName: external-secrets-account
 externalSecretsIRSA: arn:aws:iam::084912621610:role/external-secrets
 clusterSecretStoreName: cluster-secretstore
@@ -114,10 +111,7 @@ configMapData:
   SPRING_CONFIG_IMPORT_SECRETS: optional:configtree:/run/secrets/app/
   DATASOURCE_TYPE: postgresql
   DATASOURCE_DRIVER: org.postgresql.Driver
-  # DATASOURCE_HOST: database
   DATASOURCE_PORT: '5432'
-  # DATASOURCE_NAME: greencity
-  # DATASOURCE_USER: greencity
   LIQUIB_ENABLED: 'true'
   LIQUIB_CHANGELOG: classpath:db/changelog/db.changelog-master.xml
   LIQUIB_SERVICE_EMAIL: service@greencity.ua
@@ -130,10 +124,8 @@ configMapData:
   SMTP_AUTH: 'true'
   SMTP_TLS_ENABLED: 'true'
   BACKCORE_HOST: greencity-backcore-greencity-backcore
-  # BACKCORE_HOST: backcore
   BACKCORE_PORT: '8080'
   BACKUSER_HOST: greencity-backuser-greencity-backuser
-  # BACKUSER_HOST: backuser
   BACKUSER_PORT: '8060'
   CHAT_HOST: chat
   CHAT_PORT: '8030'
